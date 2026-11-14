@@ -91,8 +91,28 @@ def _num(value: Any) -> str:
     return f"{value:.1f}"
 
 
+_KEY_LABELS = {
+    "aqi": "AQI", "mean_aqi_period": "period mean AQI", "trend_per_day": "AQI change per day",
+    "slope_per_day": "AQI change per day", "delta_total": "total AQI change", "first_aqi": "first AQI",
+    "last_aqi": "latest AQI", "n_stuck": "stuck readings", "n_spike": "spikes", "n_readings": "readings",
+    "n_gaps": "gaps", "n_stations_with_gaps": "stations with gaps", "hours_missing": "hours missing",
+    "coverage": "coverage", "flagged_share": "flagged share", "reliability": "reliability",
+    "max_avg": "highest average", "max_multiple": "times the WHO limit", "max_station": "worst station",
+    "n_exceeding": "stations over the limit", "n_stations": "stations", "who_24h_limit": "WHO 24-hour limit",
+    "peak_hour": "peak hour", "peak_mean": "peak average", "trough_hour": "lowest hour",
+    "trough_mean": "lowest average", "peak_to_trough": "peak-to-low ratio", "n_hours": "hours",
+    "n_days": "days", "n_valid_days": "valid days", "dominant": "dominant pollutant",
+    "best_delta": "best change", "worst_delta": "worst change", "mean_delta": "average change",
+    "max_aqi_now": "highest AQI now", "max_aqi_prev": "highest AQI before", "n_worse": "stations worse",
+    "n_better": "stations better", "n_same": "stations unchanged", "n_new_hotspots": "new hotspots",
+    "n_resolved_hotspots": "resolved hotspots", "n_category_transitions": "category changes",
+    "worst_station": "worst-hit station", "best_station": "most improved station",
+}
+_QUIET_KEYS = {"aqi_kind", "verification_needed", "delta_threshold", "n_stations_now", "n_stations_prev"}
+
+
 def _human_key(key: str) -> str:
-    return key.replace("_", " ").strip()
+    return _KEY_LABELS.get(key) or re.sub(r"^n_", "number of ", key).replace("_", " ").strip()
 
 
 def aqi_category(aqi: float | None) -> str | None:
@@ -127,7 +147,7 @@ def _facts_phrase(facts: dict[str, Any], limit: int = 3) -> str:
     for key, value in facts.items():
         if len(parts) >= limit:
             break
-        if isinstance(value, bool) or value is None:
+        if isinstance(value, bool) or value is None or key in _QUIET_KEYS:
             continue
         if isinstance(value, (int, float)):
             parts.append(f"{_human_key(key)} {_num(value)}")
