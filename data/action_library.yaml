@@ -1,0 +1,507 @@
+# Action library for the Civic Air Quality Briefing Studio (PromptWars).
+#
+# Schema per item (see CONTRACT.md, section "data/"):
+#   id             - stable identifier referenced by llm/stages.py stage P3 and llm/fallback.py
+#   persona        - one or more of: ward_officer | housing_society | school
+#   title          - short human title
+#   action         - what to do, concrete and locally doable
+#   trigger        - when the action applies:
+#       pollutants     - canonical names: PM2.5, PM10, NO2, SO2, O3, CO, NH3
+#       min_category   - lowest CPCB AQI category that triggers it (CATEGORIES name);
+#                        "Good" means the trigger is not category-gated (used for data-quality actions)
+#       time_pattern   - optional: hour-of-day window from the pattern finding
+#       signature      - optional: pollutant/anomaly signature from the findings
+#   effort         - low | medium | high
+#   typical_owner  - who actually does it
+#   notes          - caveats, pairings, thresholds
+#
+# Rules baked into this file: practical, India-realistic actions only; no invented
+# legal powers (requests, inspections, coordination and reporting only, or powers
+# that already exist in the ordinary course of ward work); activity-advice
+# thresholds are suggested defaults tied to CPCB category text, not medical guidance.
+
+# ---------------------------------------------------------------- ward officer
+- id: wo_sweep_sprinkle
+  persona: [ward_officer]
+  title: "Targeted road sweeping and water sprinkling on hotspot stretches"
+  action: "Arrange mechanical road sweeping and water sprinkling on the stretches around the hotspot stations, twice a day so it finishes before the morning (07:00-09:00) and evening (18:00-22:00) peak hours named in the findings. Give priority to unpaved shoulders and visibly dusty segments."
+  trigger:
+    pollutants: [PM2.5, PM10]
+    min_category: "Moderately Polluted"
+    time_pattern: "before the morning and evening peaks"
+    signature: "PM2.5/PM10-dominant readings, consistent with road and construction dust"
+  effort: medium
+  typical_owner: "Ward office with the solid waste management (SWM) crew"
+  notes: "The pattern finding names the actual peak windows; schedule crews to finish before the peak, not during it."
+
+- id: wo_construction_dust
+  persona: [ward_officer]
+  title: "Dust-control inspection round at construction sites"
+  action: "Walk the construction and road-work sites in the ward during daylight hours, check that material piles are covered, cutting and grinding are done wet, and site exits have mud-washing arrangements, and agree a fix-by date with each site in-charge. Re-visit the sites that stay dusty."
+  trigger:
+    pollutants: [PM10, PM2.5]
+    min_category: "Moderately Polluted"
+    signature: "PM10 elevated at stations near construction belts"
+  effort: medium
+  typical_owner: "Ward officer / junior engineer"
+  notes: "Inspection, advice and follow-up only; enforcement powers differ by city and state, so do not claim any beyond what the ward already exercises."
+
+- id: wo_burning_patrol
+  persona: [ward_officer]
+  title: "Evening patrols against open waste and leaf burning"
+  action: "Post ward staff on observation rounds around the hotspot during the 18:00-22:00 window to note open burning of waste, leaves or garden trimmings, ask the people burning to stop, and arrange pickup of the piled material the same evening so it is not re-lit."
+  trigger:
+    pollutants: [PM2.5]
+    min_category: "Poor"
+    time_pattern: "evening peak 18:00-22:00"
+    signature: "evening PM2.5 spikes, consistent with open burning"
+  effort: medium
+  typical_owner: "Ward staff / SWM team"
+  notes: "Works through persuasion and quick clean-up; log locations and times so the next brief can show whether the evening peak eased."
+
+- id: wo_waste_pickup_boost
+  persona: [ward_officer]
+  title: "Extra waste and leaf-collection trips in the hotspot zone"
+  action: "Request additional door-to-door collection and leaf-lift trips in the hotspot stretches during the high-burning hours, so piles that usually get burned are lifted the same day."
+  trigger:
+    pollutants: [PM2.5, PM10]
+    min_category: "Poor"
+    time_pattern: "evening 18:00-22:00"
+    signature: "PM2.5-dominant evening peaks"
+  effort: medium
+  typical_owner: "SWM department"
+  notes: "Removes the fuel for open burning; pairs with wo_burning_patrol."
+
+- id: wo_traffic_junctions
+  persona: [ward_officer]
+  title: "Traffic smoothing and idling control at flagged junctions"
+  action: "Share the junction-level findings with the traffic police and request signal retiming, extra marshals and queue management at the junctions named in the findings during peak hours, so vehicle queues and idling shrink."
+  trigger:
+    pollutants: [NO2, CO]
+    min_category: "Poor"
+    time_pattern: "morning and evening peaks"
+    signature: "NO2 and CO moving together, consistent with traffic"
+  effort: medium
+  typical_owner: "Ward officer coordinating with traffic police"
+  notes: "Traffic police lead on the road; the ward supplies the data and the request."
+
+- id: wo_dg_set_survey
+  persona: [ward_officer]
+  title: "Survey of diesel generator (DG) use in commercial stretches"
+  action: "Survey diesel generator use at markets and commercial stretches in the ward on Poor-or-worse days, note sets running during grid-supply hours, and report the list to the state pollution control board through the regular channel."
+  trigger:
+    pollutants: [NO2, SO2, PM2.5]
+    min_category: "Poor"
+    signature: "NO2/SO2 elevation without a matching traffic peak"
+  effort: medium
+  typical_owner: "Ward officer"
+  notes: "Survey and report only; DG-set enforcement sits with the pollution control board and the electricity distributor."
+
+- id: wo_sensor_field_check
+  persona: [ward_officer]
+  title: "Field check of the station that is reporting strangely"
+  action: "Where the quality report shows a stuck or impossible-value sensor, send a field team to confirm the sensor's condition, arrange recalibration or repair with the station operator, and note the outage window so the brief can mark the data unreliable until it is fixed."
+  trigger:
+    pollutants: [PM2.5, PM10, NO2, SO2, O3, CO]
+    min_category: "Good"
+    signature: "stuck sensor (many identical readings), impossible spikes, or long data gaps"
+  effort: low
+  typical_owner: "Ward officer with the station operator"
+  notes: "Data-quality trigger: fires on anomaly and gap findings, not on the AQI category."
+
+- id: wo_gap_manual_log
+  persona: [ward_officer]
+  title: "Manual log-sheet during a station outage"
+  action: "During a station's long gap, arrange a simple manual log (a portable meter or a one-page hourly sheet filled by the operator) for the outage hours, so the next brief can compare the gap period with something."
+  trigger:
+    pollutants: [PM2.5, PM10, NO2, SO2, O3, CO]
+    min_category: "Good"
+    signature: "station with a multi-hour gap or low coverage"
+  effort: low
+  typical_owner: "Station operator, arranged by the ward office"
+  notes: "Manual readings are indicative only; label them as such in the brief."
+
+- id: wo_public_notice
+  persona: [ward_officer]
+  title: "Public notice boards and displays with today's category"
+  action: "Display the current AQI category and the care advice from the citizen advisory at the ward office, community halls and bus shelters in the hotspot wards, and refresh it whenever the category changes."
+  trigger:
+    pollutants: [PM2.5, PM10, NO2, SO2, O3, CO]
+    min_category: "Poor"
+  effort: low
+  typical_owner: "Ward office"
+  notes: "Use the advisory text as issued; do not reword numbers or category names."
+
+- id: wo_school_rwa_coord
+  persona: [ward_officer]
+  title: "Circulate the advisory to schools and RWAs in the ward"
+  action: "Forward the citizen advisory and the action list to schools, housing societies and market associations in the affected wards, and ask them to follow their own prepared checklists on Poor-or-worse days."
+  trigger:
+    pollutants: [PM2.5, PM10, NO2, SO2, O3, CO]
+    min_category: "Poor"
+  effort: low
+  typical_owner: "Ward office"
+  notes: "The persona actions for schools and societies live in the same library; point people to them."
+
+- id: wo_health_desk
+  persona: [ward_officer]
+  title: "Health-desk readiness at the urban health post"
+  action: "Ask the ward health office to keep a respiratory-symptom desk ready at the urban health post on Poor-or-worse days, stocked with the usual supplies, and to log visit counts (without diagnosis) so trends can be reported."
+  trigger:
+    pollutants: [PM2.5, PM10]
+    min_category: "Poor"
+  effort: medium
+  typical_owner: "Ward health office"
+  notes: "Readiness and counting only; this app gives no medical advice."
+
+- id: wo_escalate_board
+  persona: [ward_officer]
+  title: "Escalation pack to the state pollution control board"
+  action: "When AQI stays Very Poor or Severe for several days, send the board a short pack: the brief, the hotspot list with evidence row ids, and the actions already taken locally, and request mobile monitoring or a source-inspection visit at the hotspots."
+  trigger:
+    pollutants: [PM2.5, PM10, NO2, SO2, O3, CO]
+    min_category: "Very Poor"
+    signature: "same station Very Poor or Severe on multiple consecutive days"
+  effort: high
+  typical_owner: "Ward officer"
+  notes: "Escalation through existing channels; this is a request with evidence, not an order."
+
+- id: wo_misting_hotspot
+  persona: [ward_officer]
+  title: "Water misting at the worst hotspot junctions"
+  action: "Where misting or anti-smog equipment is already available to the ward, schedule it at the worst hotspot junctions during the evening peak hours and log each run, so the next brief can compare before and after."
+  trigger:
+    pollutants: [PM10, PM2.5]
+    min_category: "Very Poor"
+    time_pattern: "evening peak 18:00-22:00"
+  effort: medium
+  typical_owner: "Ward office"
+  notes: "Optional: only if the equipment exists locally; do not procure new equipment for one bad day."
+
+- id: wo_vms_signage
+  persona: [ward_officer]
+  title: "Variable message sign at the hotspot junction"
+  action: "Put a portable display board at the worst hotspot junction showing the day's category and one line of advice (for example 'Poor air today - sensitive groups, avoid outdoor exertion'), refreshed daily from the brief."
+  trigger:
+    pollutants: [PM2.5, PM10]
+    min_category: "Poor"
+  effort: low
+  typical_owner: "Ward office"
+  notes: "One sign, one message, updated daily; keep the category wording identical to the advisory."
+
+# ------------------------------------------------------------ housing society
+- id: hs_stop_burning
+  persona: [housing_society]
+  title: "No burning of leaves or waste on society premises"
+  action: "Tell housekeeping and gardening staff that leaves, garden waste and garbage go to the collection point and are never burned; put up one sign at the usual burning spot and have the guard check it during the evening hours."
+  trigger:
+    pollutants: [PM2.5, PM10]
+    min_category: "Satisfactory"
+    time_pattern: "evening 18:00-22:00"
+    signature: "PM2.5-dominant readings"
+  effort: low
+  typical_owner: "RWA / housekeeping supervisor"
+  notes: "Cheapest fix available to a society; if piles build up, ask the ward office for an extra pickup (wo_waste_pickup_boost)."
+
+- id: hs_dg_minimise
+  persona: [housing_society]
+  title: "Cut DG-set running to essentials"
+  action: "Run diesel generators only when the mains is actually down, move non-essential test-runs to a better-air mid-morning slot, get the exhaust checked at the next service, and log the running hours."
+  trigger:
+    pollutants: [NO2, SO2, PM2.5]
+    min_category: "Poor"
+    signature: "NO2/SO2 elevation"
+  effort: low
+  typical_owner: "RWA facility committee"
+  notes: "During Poor or worse days, postpone all non-essential DG test runs."
+
+- id: hs_renovation_dust
+  persona: [housing_society]
+  title: "Dust control for in-society renovation work"
+  action: "For any flat renovation or repainting: cover material and debris, use wet cutting and grinding, close the lift-lobby doors on the work floor, and clear debris through the covered route the same day."
+  trigger:
+    pollutants: [PM10]
+    min_category: "Moderately Polluted"
+    signature: "PM10-dominant readings"
+  effort: low
+  typical_owner: "RWA with the contractor"
+  notes: "Write the three rules into the renovation-permission form so they apply by default."
+
+- id: hs_water_sweep
+  persona: [housing_society]
+  title: "Water the open areas before sweeping, not dry sweeping"
+  action: "Water driveways and landscaped areas early morning and again before the evening peak, then sweep; stop dry brooming during the peak hours."
+  trigger:
+    pollutants: [PM10, PM2.5]
+    min_category: "Moderately Polluted"
+    time_pattern: "early morning and 18:00-22:00"
+  effort: low
+  typical_owner: "Housekeeping"
+  notes: "Use recycled or treated water where the society has it."
+
+- id: hs_shift_events
+  persona: [housing_society]
+  title: "Move outdoor events and gym time away from peak hours"
+  action: "Shift society events, yoga groups and gym routines away from the peak hours named in the pattern finding; hold anything outdoors in the better-air window the findings show (usually midday) or move it indoors."
+  trigger:
+    pollutants: [PM2.5, PM10, O3]
+    min_category: "Poor"
+    time_pattern: "peaks named in the pattern finding"
+  effort: low
+  typical_owner: "RWA events committee"
+  notes: "Follow the station's actual peak window from the findings, not a fixed clock time."
+
+- id: hs_indoor_commons
+  persona: [housing_society]
+  title: "Keep common indoor areas clean-air friendly at peaks"
+  action: "During peak hours keep clubhouse windows closed, run the clubhouse air purifiers (or at least a freshly cleaned AC filter), and vacuum rather than sweep inside."
+  trigger:
+    pollutants: [PM2.5, PM10]
+    min_category: "Poor"
+    time_pattern: "peak hours from the pattern finding"
+  effort: medium
+  typical_owner: "Facility committee"
+  notes: "Filter servicing matters more than buying new purifiers for one season."
+
+- id: hs_window_timing
+  persona: [housing_society]
+  title: "Window-opening guidance for flats"
+  action: "Circulate one line on the notice board and the WhatsApp groups: keep windows closed during the named peak hours, open them in the better-air window the findings show, and run kitchen and bathroom exhausts while cooking."
+  trigger:
+    pollutants: [PM2.5, PM10]
+    min_category: "Moderately Polluted"
+    time_pattern: "from the pattern finding"
+  effort: low
+  typical_owner: "RWA communications"
+  notes: "Tie the wording to the current category; a Satisfactory day needs no window rules."
+
+- id: hs_elderly_check
+  persona: [housing_society]
+  title: "Door-check on elderly and respiratory patients at peaks"
+  action: "Ask the society volunteer group to door-check elderly residents and residents with known respiratory or heart conditions on Poor-or-worse days, help shift their walks to the better-air window, and keep clinic numbers handy."
+  trigger:
+    pollutants: [PM2.5, PM10, NO2]
+    min_category: "Poor"
+  effort: low
+  typical_owner: "RWA volunteers"
+  notes: "Care support, not medical advice; involve family or the family doctor for anything medical."
+
+- id: hs_notice_advisory
+  persona: [housing_society]
+  title: "Notice board and WhatsApp advisory from the brief"
+  action: "Post the citizen advisory on the society notice board and pin it in the WhatsApp groups each morning the category is Moderately Polluted or worse; keep the numbers and category text exactly as issued."
+  trigger:
+    pollutants: [PM2.5, PM10, NO2, SO2, O3, CO]
+    min_category: "Moderately Polluted"
+  effort: low
+  typical_owner: "RWA admin"
+  notes: "Copy the advisory, do not summarise; it already carries the data-gap note."
+
+- id: hs_gate_idling
+  persona: [housing_society]
+  title: "No-idling request at the society gate"
+  action: "Request delivery, taxi and visitor drivers to switch engines off while waiting at the gate, put up a small sign, and have the guard politely remind drivers during school and evening hours."
+  trigger:
+    pollutants: [NO2, CO]
+    min_category: "Moderately Polluted"
+    signature: "NO2 and CO moving together"
+  effort: low
+  typical_owner: "Security / RWA"
+  notes: "A request and a sign, not a penalty."
+
+- id: hs_kids_play_time
+  persona: [housing_society]
+  title: "Move children's outdoor play to the better-air window"
+  action: "Move the children's evening play slot to the better-air window shown by the pattern finding, or indoors on Poor-or-worse days; tell parents in the same message as the advisory."
+  trigger:
+    pollutants: [PM2.5, PM10]
+    min_category: "Moderately Polluted"
+    time_pattern: "evening peak"
+  effort: low
+  typical_owner: "RWA / parents' group"
+  notes: "Children breathe faster and stand closer to tailpipe height, so the evening peak is the worst slot for them."
+
+- id: hs_clean_air_room
+  persona: [housing_society]
+  title: "Designated clean-air room for Very Poor days"
+  action: "On Very Poor days designate one hall (clubhouse or community room) with a purifier or a clean AC filter as a gathering space for elderly residents and anyone feeling unwell, with water and seating."
+  trigger:
+    pollutants: [PM2.5, PM10]
+    min_category: "Very Poor"
+  effort: medium
+  typical_owner: "RWA"
+  notes: "Set it up in advance so it can open the same morning the category turns Very Poor."
+
+- id: hs_report_outside_burning
+  persona: [housing_society]
+  title: "Report outside burning affecting the society"
+  action: "When burning across the boundary wall is visible or smellable, report it to the ward office with a photo, location and time, and note it against the evening PM2.5 peak in the next brief."
+  trigger:
+    pollutants: [PM2.5]
+    min_category: "Satisfactory"
+    time_pattern: "evening"
+  effort: low
+  typical_owner: "Any resident via the RWA"
+  notes: "Feeds the ward officer's burning patrols (wo_burning_patrol) with specific locations and times."
+
+# --------------------------------------------------------------------- school
+- id: sc_pe_indoors
+  persona: [school]
+  title: "Move PE, sports and assembly indoors at the set threshold"
+  action: "When the morning AQI category reaches the school's threshold (suggested default: Moderately Polluted; Satisfactory for schools with many sensitive children), hold assembly and PE indoors and shift practice to the better-air window the findings show."
+  trigger:
+    pollutants: [PM2.5, PM10]
+    min_category: "Moderately Polluted"
+    time_pattern: "morning assembly and games periods"
+  effort: low
+  typical_owner: "Principal / sports teacher"
+  notes: "Suggested default tied to CPCB category text, not medical guidance; the school sets its own explicit threshold and records it."
+
+- id: sc_skip_outdoor
+  persona: [school]
+  title: "Skip outdoor activity entirely on Poor or worse days"
+  action: "Cancel outdoor games, drills and excursions for the day when the category is Poor or worse, and replace them with indoor alternatives (library, activity rooms, indoor courts if available)."
+  trigger:
+    pollutants: [PM2.5, PM10]
+    min_category: "Poor"
+  effort: low
+  typical_owner: "Principal"
+  notes: "Announce the decision in the morning so parents are not surprised at dispersal time."
+
+- id: sc_assembly_shift
+  persona: [school]
+  title: "Shift assembly out of the morning peak"
+  action: "Move morning assembly indoors, or to the better-air window, on days the pattern finding shows a 07:00-09:00 peak; keep outdoor announcements short."
+  trigger:
+    pollutants: [PM2.5, PM10]
+    min_category: "Moderately Polluted"
+    time_pattern: "07:00-09:00 morning peak"
+  effort: low
+  typical_owner: "Principal"
+  notes: "Assembly sits exactly inside the morning traffic peak on most stations."
+
+- id: sc_gate_idling
+  persona: [school]
+  title: "No-idling zone at the school gate"
+  action: "Ask buses and parent vehicles to switch engines off while waiting, line up marshals at arrival and dispersal, put up a no-idling sign, and ask the transport contractor to brief drivers."
+  trigger:
+    pollutants: [NO2, CO]
+    min_category: "Moderately Polluted"
+    time_pattern: "arrival and dispersal hours"
+    signature: "NO2 and CO moving together"
+  effort: low
+  typical_owner: "School admin with the transport contractor"
+  notes: "The gate queue is the school's own measurable air problem; marshals fix it for free."
+
+- id: sc_ventilation_timing
+  persona: [school]
+  title: "Classroom ventilation by the clock"
+  action: "Keep classroom windows open in the better-air window and closed during the named peak hours; clean AC and purifier filters monthly; prefer markers over chalk in poorly ventilated rooms."
+  trigger:
+    pollutants: [PM2.5, PM10, NO2]
+    min_category: "Moderately Polluted"
+    time_pattern: "from the pattern finding"
+  effort: low
+  typical_owner: "Class teachers / maintenance"
+  notes: "One line on the staff notice board is enough to run this."
+
+- id: sc_sensitive_students
+  persona: [school]
+  title: "Indoor option for sensitive students"
+  action: "With parents' consent, keep a list of students with asthma or other respiratory or cardiac conditions, let them skip outdoor periods without explanation, give them an indoor space, and brief their class teachers each term."
+  trigger:
+    pollutants: [PM2.5, PM10, O3]
+    min_category: "Poor"
+  effort: medium
+  typical_owner: "Class teacher with the school nurse"
+  notes: "Confidential, consent-based list; no diagnosis by the school."
+
+- id: sc_parent_comms
+  persona: [school]
+  title: "Parent advisory on school channels"
+  action: "Send the citizen advisory to parents on the school app or WhatsApp when the category is Moderately Polluted or worse, unedited, with the school's own decision for the day (assembly indoors, games cancelled) on top."
+  trigger:
+    pollutants: [PM2.5, PM10, NO2, SO2, O3, CO]
+    min_category: "Moderately Polluted"
+  effort: low
+  typical_owner: "School admin"
+  notes: "Do not rewrite the advisory or add numbers; keep the brief's data-gap note so parents know what is uncertain."
+
+- id: sc_inhaler_readiness
+  persona: [school]
+  title: "Inhaler and emergency-contact readiness"
+  action: "Before Poor-or-worse days, check that reliever inhalers sent by parents of sensitive students are in date, emergency contacts are current, and the nurse or first-aider knows the list; remind parents to send the inhaler to school."
+  trigger:
+    pollutants: [PM2.5, PM10]
+    min_category: "Poor"
+  effort: low
+  typical_owner: "School nurse / first-aider"
+  notes: "Logistics readiness only; all medical decisions stay with parents and doctors."
+
+- id: sc_ground_watering
+  persona: [school]
+  title: "Water the grounds before morning sports"
+  action: "Water the playground and dust-patch areas before the first outdoor period on dry days, and sweep collected leaves into the collection point instead of burning them."
+  trigger:
+    pollutants: [PM10, PM2.5]
+    min_category: "Satisfactory"
+  effort: low
+  typical_owner: "Grounds staff"
+  notes: "Cheap and immediate; pairs with the no-burning rule."
+
+- id: sc_bus_puc
+  persona: [school]
+  title: "Valid PUC certificates for the school bus fleet"
+  action: "Ask the transport contractor for the current PUC (pollution-under-control) certificates of all school buses and vans, keep copies on file, and flag any vehicle that is out of date for follow-up."
+  trigger:
+    pollutants: [NO2, PM2.5, CO]
+    min_category: "Satisfactory"
+    signature: "traffic-related pollutants"
+  effort: low
+  typical_owner: "Transport in-charge"
+  notes: "PUC certification is an existing requirement; the school only asks for the paperwork and follows up."
+
+- id: sc_purifier_nurse_room
+  persona: [school]
+  title: "Purifier in the nurse room and sick bay"
+  action: "Keep one purifier (or a serviced AC with a clean filter) running in the nurse room or sick bay on Poor-or-worse days, since that is where sensitive students go."
+  trigger:
+    pollutants: [PM2.5]
+    min_category: "Poor"
+  effort: medium
+  typical_owner: "School admin"
+  notes: "One room, one machine; focus spend there rather than on every classroom."
+
+- id: sc_coord_ward
+  persona: [school]
+  title: "Share the school's decision with the ward office"
+  action: "Reply to the ward office's advisory circulation with what the school did that day (outdoor activity cancelled or shifted), so the ward's next brief can record the community response."
+  trigger:
+    pollutants: [PM2.5, PM10, NO2, SO2, O3, CO]
+    min_category: "Poor"
+  effort: low
+  typical_owner: "Principal"
+  notes: "A two-line reply is enough; it also unlocks ward-level help such as sprinkling near the school."
+
+- id: sc_indoor_alternatives
+  persona: [school]
+  title: "Ready indoor activity plan"
+  action: "Keep a printed list of indoor options for each class (library slots, board games, video lessons, indoor yoga) so a cancelled outdoor period fills within minutes, not by improvisation."
+  trigger:
+    pollutants: [PM2.5, PM10]
+    min_category: "Poor"
+  effort: low
+  typical_owner: "Sports teacher / class teachers"
+  notes: "Write it once into the term plan; use it any day the category turns Poor."
+
+- id: sc_sensor_report
+  persona: [school]
+  title: "Report data gaps if the school hosts a sensor"
+  action: "If the school grounds host a monitoring station or the school keeps its own low-cost sensor, report outages and obviously stuck readings to the ward office so the quality report can mark that period unreliable."
+  trigger:
+    pollutants: [PM2.5, PM10, NO2, SO2, O3, CO]
+    min_category: "Good"
+    signature: "stuck sensor, gaps, spikes"
+  effort: low
+  typical_owner: "Science coordinator"
+  notes: "Data-quality trigger; a stuck school sensor must not drive an AQI headline."
