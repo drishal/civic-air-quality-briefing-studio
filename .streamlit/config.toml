@@ -6,6 +6,7 @@ primaryColor = "#0B6E4F"
 
 [server]
 headless = true
+showEmailPrompt = false
 maxUploadSize = 50
 fileWatcherType = "none"
 enableCORS = true
@@ -13,6 +14,10 @@ enableXsrfProtection = true
 
 [browser]
 gatherUsageStats = false
+
+[logger]
+# Hides the welcome banner and the in-app "install Streamlit skills" nudge.
+hideWelcomeMessage = true
 
 [client]
 # Friendly messages in the UI, never a stack trace for the evaluator.

@@ -195,6 +195,8 @@ def main() -> int:
         "--server.port", str(port), "--server.address", args.host,
         "--server.headless", "true" if args.no_browser else "false",
         "--browser.gatherUsageStats", "false",
+        "--server.showEmailPrompt", "false",   # no onboarding-email prompt on first run
+        "--logger.hideWelcomeMessage", "true",  # no welcome banner / "install skills" nudge
     ]
     try:
         return subprocess.run(cmd, cwd=ROOT, env=child_env()).returncode
