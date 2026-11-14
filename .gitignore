@@ -1,0 +1,20 @@
+# Devenv
+.devenv*
+devenv.local.nix
+devenv.local.yaml
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml
+.venv
+
+# runtime
+.briefs/
+.demo_cache/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+.streamlit/secrets.toml
