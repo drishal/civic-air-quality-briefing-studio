@@ -37,6 +37,7 @@ _SHARED_TOKENS = """
 LIGHT_TOKENS = """
   --accent: #0b6e4f;
   --accent-ink: #084d38;
+  --on-accent: #ffffff;
 
   --bg: #fbfaf8;
   --surface: #ffffff;
@@ -69,6 +70,7 @@ LIGHT_TOKENS = """
 DARK_TOKENS = """
   --accent: #5ad3a5;
   --accent-ink: #9ff0cd;
+  --on-accent: #06231a;
   --bg: #101312;
   --surface: #171b19;
   --surface-2: #1d2220;
@@ -181,7 +183,7 @@ code, pre, [data-testid="stCode"] { font-family: var(--font-mono); }
 [data-testid="stBaseButton-primary"] {
   background: var(--accent);
   border-color: color-mix(in oklab, var(--accent) 70%, black);
-  color: #06231a;
+  color: var(--on-accent);
 }
 [data-testid="stBaseButton-primary"]:hover { background: color-mix(in oklab, var(--accent) 88%, black); }
 .stButton > button:focus-visible,
@@ -233,6 +235,69 @@ code, pre, [data-testid="stCode"] { font-family: var(--font-mono); }
 [data-testid="stMetricValue"] p { margin: 0; line-height: 1.35; }
 [data-testid="stMetricLabel"] { color: var(--fg-2); }
 [data-testid="stMetricLabel"] p { margin: 0; }
+
+/* ------------------------------------------- native widgets follow the tokens (so the in-app toggle works) */
+[data-testid="stApp"], [data-testid="stSidebar"], [data-testid="stSidebarContent"] { color: var(--fg); }
+[data-testid="stSidebar"] { background: var(--surface-2); }
+[data-testid="stMarkdownContainer"], [data-testid="stMarkdownContainer"] p,
+[data-testid="stMarkdownContainer"] li, [data-testid="stText"] { color: var(--fg); }
+[data-testid="stWidgetLabel"], [data-testid="stWidgetLabel"] p, [data-testid="stWidgetLabel"] label { color: var(--fg-2); }
+[data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p { color: var(--fg-3); }
+[data-testid="stHeading"] h1, [data-testid="stHeading"] h2, [data-testid="stHeading"] h3 { color: var(--fg); }
+.stButton > button[data-testid="stBaseButton-secondary"], .stDownloadButton > button,
+[data-testid="stBaseButton-secondary"] {
+  background: var(--surface);
+  color: var(--fg);
+}
+[data-testid="stBaseButton-secondary"]:hover { background: var(--surface-2); border-color: var(--accent); }
+[data-baseweb="select"] > div, [data-baseweb="input"], [data-baseweb="input"] > div, [data-baseweb="textarea"],
+[data-testid="stTextInputRootElement"], [data-testid="stTextAreaRootElement"] {
+  background: var(--surface);
+  color: var(--fg);
+}
+[data-baseweb="select"] *, [data-baseweb="input"] input, [data-baseweb="textarea"] textarea,
+[data-testid="stTextArea"] textarea, [data-testid="stTextInput"] input { color: var(--fg); }
+[data-baseweb="input"] input, [data-baseweb="textarea"] textarea, textarea, input { background: transparent; }
+[data-baseweb="popover"] [data-baseweb="menu"], [data-baseweb="popover"] ul {
+  background: var(--surface);
+  color: var(--fg);
+}
+[data-baseweb="select"] > div > div, [data-testid="stMultiSelect"] [data-baseweb="select"] > div { background: var(--surface); }
+[data-testid="stBaseButton-primary"], [data-testid="stBaseButton-primary"] p,
+[data-testid="stBaseButton-primary"] * { color: var(--on-accent); }
+/* tooltips: always a high-contrast inverted chip */
+[data-testid="stTooltipContent"], [data-testid="stTooltipContent"] *,
+[data-testid="stTooltipContent"] [data-testid="stMarkdownContainer"] p { background: var(--fg) !important; color: var(--bg) !important; }
+/* select / input internals carry their own theme colours: force the tokens all the way down */
+[data-baseweb="select"] div, [data-baseweb="input"] div, [data-baseweb="textarea"] div,
+[data-testid="stSelectbox"] div, [data-testid="stMultiSelect"] div { background-color: var(--surface) !important; color: var(--fg) !important; }
+[data-testid="stSelectbox"] [data-testid="stWidgetLabel"], [data-testid="stSelectbox"] [data-testid="stWidgetLabel"] div,
+[data-testid="stMultiSelect"] [data-testid="stWidgetLabel"], [data-testid="stMultiSelect"] [data-testid="stWidgetLabel"] div {
+  background-color: transparent !important; color: var(--fg-2) !important;
+}
+[data-testid="stSelectbox"] *:not(span), [data-testid="stSelectbox"] input,
+[data-testid="stMultiSelect"] input { color: var(--fg) !important; -webkit-text-fill-color: var(--fg); opacity: 1; }
+[data-testid="stSelectbox"] [data-testid="stWidgetLabel"] *, [data-testid="stMultiSelect"] [data-testid="stWidgetLabel"] * { color: var(--fg-2) !important; -webkit-text-fill-color: var(--fg-2); }
+[data-testid="stSelectbox"] svg, [data-testid="stMultiSelect"] svg { fill: var(--fg-2) !important; color: var(--fg-2) !important; opacity: 1 !important; }
+[data-testid="stMultiSelect"] span, [data-testid="stMultiSelect"] span svg { color: #fff !important; fill: #fff !important; }
+[data-testid="stTooltipHoverTarget"] svg, [data-testid="stWidgetLabel"] svg { color: var(--fg-3); fill: var(--fg-3); }
+
+/* theme toggle: a small round icon button pinned to the top right */
+.st-key-theme_toggle { position: fixed; top: .55rem; right: 3.4rem; z-index: 1000002; width: auto; }
+.st-key-theme_toggle button {
+  width: 2.25rem; height: 2.25rem; min-height: 0; padding: 0; border-radius: 999px;
+  background: var(--surface); color: var(--fg); border: 1px solid var(--hairline-strong);
+  box-shadow: var(--elev-1); font-size: 1.15rem;
+}
+.st-key-theme_toggle button:hover { border-color: var(--accent); color: var(--accent-ink); }
+.st-key-theme_toggle button * { color: inherit; }
+[data-baseweb="popover"] li { color: var(--fg); }
+[data-baseweb="popover"] li:hover, [data-baseweb="popover"] li[aria-selected="true"] { background: var(--surface-2); }
+[data-testid="stFileUploaderDropzone"] *, [data-testid="stFileUploaderDropzoneInstructions"] * { color: var(--fg-2); }
+[data-testid="stFileUploaderDropzone"] button { background: var(--surface); color: var(--fg); }
+[data-testid="stExpander"] summary, [data-testid="stExpander"] summary * { color: var(--fg); }
+[data-testid="stAlertContainer"] * { color: inherit; }
+[data-testid="stDataFrame"] { color-scheme: inherit; }
 
 /* --------------------------------------------------------------- tabs (react-aria in 1.67, graceful otherwise) */
 [data-testid="stTabs"] [role="tablist"] {
@@ -700,17 +765,41 @@ def detect_theme(values: Optional[dict] = None) -> Optional[str]:
     return None
 
 
-def tokens_css(scheme: Optional[str]) -> str:
+def tokens_css(scheme: Optional[str]) -> str:  # noqa: D401
     """An explicit token block that wins over the media-query fallback (same specificity, later)."""
     tokens = {"light": LIGHT_TOKENS, "dark": DARK_TOKENS}.get(scheme or "")
     if not tokens:
         return ""
-    return f"<style>:root {{{tokens}}}</style>"
+    return f"<style>:root {{ color-scheme: {scheme};{tokens}}}</style>"
+
+
+MODE_KEY = "theme_mode"  # session_state: "light" | "dark" once the user has picked one
+
+
+def current_scheme() -> str:
+    """The scheme in effect: the user's pick, else what Streamlit renders (light when unknown)."""
+    try:
+        picked = st.session_state.get(MODE_KEY)
+    except Exception:
+        picked = None
+    return picked if picked in ("light", "dark") else (detect_theme() or "light")
+
+
+def toggle_scheme() -> None:
+    """Button callback: flip light/dark for this session."""
+    st.session_state[MODE_KEY] = "light" if current_scheme() == "dark" else "dark"
+
+
+def theme_toggle(key: str = "theme_toggle") -> None:
+    """Icon button (top right) that switches between the light and dark theme."""
+    dark = current_scheme() == "dark"
+    st.button(
+        ":material/light_mode:" if dark else ":material/dark_mode:", key=key, on_click=toggle_scheme,
+        help="Switch to the light theme" if dark else "Switch to the dark theme",
+    )
 
 
 def inject() -> None:
     """Add the stylesheet to the page. Safe to call on every rerun."""
     st.markdown(CSS, unsafe_allow_html=True)
-    override = tokens_css(detect_theme())
-    if override:
-        st.markdown(override, unsafe_allow_html=True)
+    st.markdown(tokens_css(current_scheme()), unsafe_allow_html=True)

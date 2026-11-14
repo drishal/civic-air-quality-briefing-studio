@@ -615,11 +615,10 @@ def sidebar() -> tuple[str, str, list[str], list[str]]:
 
         st.divider()
         st.markdown("**Sample data**")
-        col1, col2 = st.columns(2)
-        if col1.button("Load sample week 1", key="sb_load_week1", **STRETCH):
+        if st.button("Load sample week 1", key="sb_load_week1", **STRETCH):
             if load_sample(1, area):
                 st.rerun()
-        if col2.button("Load sample week 2", key="sb_load_week2", **STRETCH):
+        if st.button("Load sample week 2", key="sb_load_week2", **STRETCH):
             if load_sample(2, area):
                 st.rerun()
         st.caption("Load week 1, then week 2, to unlock the “What changed” diff.")
@@ -1559,6 +1558,7 @@ def prompt_cockpit_tab(persona: str) -> None:
 def main() -> None:
     init_state()
     theme.inject()
+    theme.theme_toggle()
 
     persona, area, languages, levels = sidebar()
 

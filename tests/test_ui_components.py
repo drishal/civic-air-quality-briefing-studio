@@ -294,7 +294,7 @@ def test_theme_defines_required_tokens():
     css = theme.CSS
     for token in (
         "--elev-0", "--elev-1", "--elev-2", "--font-sans", "--font-mono",
-        "--bg", "--fg", "--hairline", "--accent",
+        "--bg", "--fg", "--hairline", "--accent", "--on-accent",
     ):
         assert token in css, token
     assert "prefers-color-scheme: dark" in css
