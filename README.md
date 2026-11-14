@@ -9,6 +9,29 @@ and sensitive groups. Every finding points back to the source rows; data gaps an
 Gemini only interprets and writes, must cite finding ids (`[F3]`), and a verifier checks the citations and
 numbers. With no API key the app still works in an offline fallback mode.
 
+## Quick start (3 steps)
+1. **Install Python 3.11+** (nothing else: no Docker, no Nix, no Node).
+2. **Start it:** Windows, double-click `run.bat`; macOS/Linux, run `./start.sh`. Any OS: `python run.py`.
+   The first start creates `.venv` and installs the dependencies (1-2 minutes, internet needed once).
+3. **Open <http://localhost:8501>** (the browser opens by itself; if the port is busy the launcher prints the one it chose).
+   Click **Load sample week 1**, then **Load sample week 2**. Stop with `Ctrl+C`.
+
+Add `GEMINI_API_KEY` for the full AI experience (see below). Without it the app still runs in offline fallback mode.
+
+## The tabs
+| Tab | What it gives you |
+|---|---|
+| 1 Data | Paste/upload, the column mapping Gemini proposed, and the cleaning log |
+| 2 Quality | Station reliability, usable share, data gaps and flags |
+| 3 Insights | Trends and hotspots in plain language, each sentence cited `[F#]` |
+| 4 Actions | Prioritized local actions for a ward officer, housing society or school |
+| 5 What changed | Comparison with the previous brief: category moves, new/resolved hotspots, action changes |
+| 6 Briefing note | Internal note for the chosen audience |
+| 7 Citizen advisory | Multilingual advisory at simple/standard reading level, with care for children, older adults and sensitive groups |
+| 8 Ask the briefing | Questions answered only from the brief, with citations |
+| 9 Prove it | Click a finding to see its number, formula and the original source rows; try to fool the verifier |
+| 10 Prompt cockpit | The prompts, schemas and checks behind each AI step |
+
 ## Run it (needs only Python 3.11+)
 
 ### Windows
