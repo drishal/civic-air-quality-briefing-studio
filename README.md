@@ -57,7 +57,8 @@ The key stays on your machine and is never shown in the UI.
 ### Try it
 Click **Load sample week 1**, explore the tabs, then **Load sample week 2** to see **What changed**. The sample
 files (`data/sample_week1.csv`, `data/sample_week2.csv`) are deliberately messy; `data/sample_manifest.md`
-lists every planted fault.
+lists every planted fault. More ready-made files (Excel, long layout, semicolon/decimal-comma, a short paste-able
+table) are in `data/demo/` with a guide in `data/demo/README.md`.
 
 ## Using your own data
 Paste a table or upload CSV / TSV / XLSX (Excel "CSV UTF-8" and legacy encodings are fine). Wide or long layouts,
