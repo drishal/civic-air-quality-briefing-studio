@@ -1,0 +1,20 @@
+# Streamlit runtime configuration. Works in both light and dark mode (no fixed base theme),
+# binds for Cloud Run through the Dockerfile CMD, and stays quiet in production.
+[theme]
+# CPCB-neutral accent; categories use core.aqi.category_color() so they stay readable in both modes.
+primaryColor = "#0B6E4F"
+
+[server]
+headless = true
+maxUploadSize = 50
+fileWatcherType = "none"
+enableCORS = true
+enableXsrfProtection = true
+
+[browser]
+gatherUsageStats = false
+
+[client]
+# Friendly messages in the UI, never a stack trace for the evaluator.
+showErrorDetails = false
+toolbarMode = "minimal"

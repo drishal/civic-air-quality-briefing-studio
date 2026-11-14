@@ -1,0 +1,26 @@
+# Keep the image small and free of local state, secrets and dev-only files.
+.git
+.gitignore
+.github
+.venv
+venv
+__pycache__
+*.py[cod]
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.briefs
+.demo_cache
+.devenv
+.devenv*
+devenv.local.*
+.direnv
+.env
+.env.*
+.streamlit/secrets.toml
+tests
+Dockerfile
+.dockerignore
+*.log
+# Root-level docs only: llm/prompts/*.md are runtime prompt files and must ship in the image.
+/*.md
